@@ -39,16 +39,14 @@ void CypressWire::Init(double freq)
   // Disable Slew Rate Control (9th bit I2C4CON)
   I2C4CONbits.DISSLW = 1;
 
-  // Magic math to set baud rate
-  double baud;
-  baud = (1 / (2 * freq)) - 0.000000104;
-  baud *= (16000   / 2) - 2;
 
-  // Set Baud Rate to 400kHz
-  I2C4BRG = (int)baud;
+
+  // Set Baud Rate to 564kHz
+  I2C4BRG = 0x0050; // (int)baud;
 
   // Turn on I2C (15th bit I2C4CON)
   I2C4CONbits.ON = 1;
+
 }
 
 
@@ -134,13 +132,12 @@ uint8_t CypressWire::SBread(uint32_t add)
   uint8_t value;
 
   // Get 16th bit
-  uint8_t A16 = add >> 16;
-  A16 &= 1;
+  uint8_t msb = add >> 16;
 
   // Start byte is memory slave address with A16
   uint8_t begin_byte;
-  begin_byte = 0b10100000;
-  begin_byte |= A16 << 1;
+  begin_byte = 160;
+  begin_byte |= msb << 1;
 
   // Most Significant byte and Least Significant byte
   uint8_t ms, ls;
@@ -196,4 +193,80 @@ void CypressWire::memDump(uint32_t stop)
                                                                                                                    data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15]);
     Serial.println(buf);
   }
+}
+
+void CypressWire::STORE()
+{
+  Start();
+  Write(0b00110000, 1);
+  Write(0b10101010, 1);
+  Write(0b00111100, 1);
+  Stop();
+}
+
+void CypressWire::RECALL()
+{
+  Start();
+  Write(0b00110000, 1);
+  Write(0b10101010, 1);
+  Write(0b01100000, 1);
+  Stop();
+}
+
+void CypressWire::ASENB()
+{
+  Start();
+  Write(0b00110000, 1);
+  Write(0b10101010, 1);
+  Write(0b01011001, 1);
+  Stop();
+}
+
+void CypressWire::ASDISB()
+{
+  Start();
+  Write(0b00110000, 1);
+  Write(0b10101010, 1);
+  Write(0b00011001, 1);
+  Stop();
+}
+
+void CypressWire::SLEEP()
+{
+  Start();
+  Write(0b00110000, 1);
+  Write(0b10101010, 1);
+  Write(0b10111001, 1);
+  Stop();
+}
+
+uint8_t CypressWire::HSread(uint32_t add)
+{
+  uint8_t value;
+
+  // Get 16th bit
+  uint8_t msb = add >> 16;
+
+  // Start byte is memory slave address with A16
+  uint8_t begin_byte;
+  begin_byte = 160;
+  begin_byte |= msb << 1;
+
+  // Most Significant byte and Least Significant byte
+  uint8_t ms, ls;
+
+  ms = add >> 8;
+  ls = add & 0xFF;
+
+  Start();
+  Write(0b00001000, 1);
+  Restart();
+  Write(begin_byte, 1);
+  Write(ms, 1);
+  Write(ls, 1);
+  value = Read(1);
+  Stop();
+
+  return value;
+
 }
