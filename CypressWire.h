@@ -15,6 +15,12 @@ class CypressWire
   uint8_t SBread(uint32_t);
   void SBwrite(uint32_t, uint8_t);
   void memDump(uint32_t);
+  void STORE();
+  void RECALL();
+  void ASENB();
+  void ASDISB();
+  void SLEEP();
+
 
 
 private:
