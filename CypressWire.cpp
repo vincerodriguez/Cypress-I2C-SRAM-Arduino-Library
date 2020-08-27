@@ -77,7 +77,7 @@ void CypressWire::Write(unsigned char  addr, uint8_t wt)
 
 void CypressWire::Write(int  addr, int wt)
 {
-  Write( (unsigned char) addr, (uint8_t) wt );
+  Write( (unsigned char) addr, (uint8_t) wt);
 }
 
 void CypressWire::Ack()
@@ -126,7 +126,7 @@ void CypressWire::Restart()
 Read from location "add".
 Location is 17-bit value
 */
-uint8_t CypressWire::SBread(uint32_t add)
+uint8_t CypressWire::SBread(uint32_t add, int selectChip)
 {
 
   uint8_t value;
@@ -138,6 +138,15 @@ uint8_t CypressWire::SBread(uint32_t add)
   uint8_t begin_byte;
   begin_byte = 160;
   begin_byte |= msb << 1;
+  
+  if (selectChip == 0)
+  {
+	  begin_byte |= 0b00000000;
+  }
+  else
+  {
+	begin_byte |= 0b00000100;
+  }
 
   // Most Significant byte and Least Significant byte
   uint8_t ms, ls;
@@ -151,14 +160,14 @@ uint8_t CypressWire::SBread(uint32_t add)
   Write(ms, 1) ;        // Most Significant Address Byte
   Write(ls, 1);         // Least Significant Address Byte
   Restart();            // Repeated Start Condition
-  Write(0b10100001,1);  // Memory Slave Address ( Read )
+  Write(0b10100001 | begin_byte ,1);  // Memory Slave Address ( Read )
   value = Read(1);       // Read Data Byte
   Stop();               // Stop Condition
 
   return value;
 }
 
-void CypressWire::SBwrite(uint32_t add, uint8_t value)
+void CypressWire::SBwrite(uint32_t add, uint8_t value, int selectChip)
 {
   uint8_t A16 = add >> 16;
   A16 &= 1;
@@ -166,6 +175,15 @@ void CypressWire::SBwrite(uint32_t add, uint8_t value)
   uint8_t begin_byte;
   begin_byte = 0b10100000;
   begin_byte |= A16 << 1;
+  
+  if (selectChip == 0)
+  {
+	  begin_byte |= 0b00000000;
+  }
+  else
+  {
+	begin_byte |= 0b00000100;
+  }
 
   uint8_t ms, ls;
   ms = add >> 8;
@@ -179,19 +197,20 @@ void CypressWire::SBwrite(uint32_t add, uint8_t value)
   Stop();               // Stop Condition
 }
 
-void CypressWire::memDump(uint32_t stop)
+void CypressWire::memDump(uint32_t stop, int slectChip)
 {
   for(int base = 0; base <= stop; base += 16)
   {
     uint8_t data[16];
-    for(int offset = 0; offset <=15 ; offset += 1)
-    {
-      data[offset] = SBread(base+offset);
-    }
-    char buf[80];
-    sprintf(buf, "%03x: %02x %02x %02x %02x %02x %02x %02x %02x    %02x %02x %02x %02x %02x %02x %02x %02x", base, data[0], data[1], data[ 2], data[ 3], data[ 4], data[ 5], data[ 6], data[ 7],
-                                                                                                                   data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15]);
-    Serial.println(buf);
+	uint8_t selectChip = selectChip;
+	for(int offset = 0; offset <=15 ; offset += 1)
+	{
+		data[offset] = SBread(base+offset, selectChip);
+	}
+	char buf[80];
+	sprintf(buf, "%03x: %02x %02x %02x %02x %02x %02x %02x %02x    %02x %02x %02x %02x %02x %02x %02x %02x", base, data[0], data[1], data[ 2], data[ 3], data[ 4], data[ 5], data[ 6], data[ 7],
+																											   data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15]);
+	Serial.println(buf);
   }
 }
 
