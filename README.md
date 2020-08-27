@@ -27,19 +27,19 @@ Functions:
 Init() - Must be called before any communication with SRAM 
 
 SBread() 	Single-Byte read. 
-		Parameters: 32-bit address, only use least significant 17 bits
-					int value for selectChip, 0 = 00, 1 = 01
-		Returns: 8--bit contents of SRAM at location given
+		Parameters: 32-bit address, only use least significant 17 bits.
+					int value for selectChip, 0 = 00, 1 = 01.
+		Returns: 8--bit contents of SRAM at location given.
 
 SBwrite()	Single-Byte write. 
-		Parameters: 32-bit address, only use least significant 17 bits
-		            8-bit data to write to address
-					int value for selectChip, 0 = 00, 1 = 01
-		Returns: Nothing
+		Parameters: 32-bit address, only use least significant 17 bits.
+		            8-bit data to write to address.
+					int value for selectChip, 0 = 00, 1 = 01.
+		Returns: Nothing.
 
 memDump() 	Dump Conents of memory to serial monitor, stops at address specified
-		Parameters: 32-bit stopping address, only use least significant 17 bits
-					int value for selectChip, 0 = 00, 1 = 01
+		Parameters: 32-bit stopping address, only use least significant 17 bits.
+					int value for selectChip, 0 = 00, 1 = 01.
 
 STORE() 	Refer to datasheet
 RECALL()	Refer to datasheet
